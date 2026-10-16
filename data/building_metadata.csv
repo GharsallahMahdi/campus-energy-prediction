@@ -1,0 +1,38 @@
+building_id,name_cn,name_en,category,building_type,floor_area_m2,x_pct,y_pct
+A,中德A楼,Sino-German Bldg A,teaching,academic,4000,48,29
+B,中德B楼,Sino-German Bldg B,teaching,academic,4000,56,28
+C,中德C楼,Sino-German Bldg C,teaching,academic,4000,64,25
+D,中德D楼,Sino-German Bldg D,teaching,academic,4500,54,20
+E,中德E楼,Sino-German Bldg E,teaching,academic,4000,46,11
+F,中德F楼,Sino-German Bldg F,teaching,academic,4000,53,10
+G,中德G楼,Sino-German Bldg G,teaching,academic,4000,59,9
+V,综合体育馆,Sports Gymnasium,office,sports,6000,39,35
+W,事务楼,Admin Building,office,admin,2500,37,42
+K,综合实训楼,Comprehensive Training Bldg,teaching,academic,5000,74,47
+J,计算机楼,Computer Building,teaching,academic,5500,75,55
+I,商务楼,Business Building,office,academic,4500,80,64
+H,教学楼,Teaching Building,teaching,academic,6000,80,72
+L,室内运动场,Indoor Sports Ground,office,sports,3000,86,64
+M,第二食堂,Second Cafeteria,office,cafeteria,2500,80,40
+N,实训中心北楼,Training Center North,teaching,academic,3500,66,69
+S,实训中心南楼,Training Center South,teaching,academic,3500,67,78
+T,图文信息中心,Library and Info Center,teaching,library,5000,54,70
+17,寝室楼17,Dormitory 17,dormitory,dorm,3000,89,54
+18,寝室楼18,Dormitory 18,dormitory,dorm,3000,89,48
+19,寝室楼19,Dormitory 19,dormitory,dorm,3000,93,40
+1,寝室楼1,Dormitory 1,dormitory,dorm,3000,31,68
+2,寝室楼2,Dormitory 2,dormitory,dorm,3000,28,72
+3,寝室楼3,Dormitory 3,dormitory,dorm,3000,33,76
+4,寝室楼4,Dormitory 4,dormitory,dorm,3000,33,81
+5,寝室楼5,Dormitory 5,dormitory,dorm,3000,24,69
+6,寝室楼6,Dormitory 6,dormitory,dorm,3000,24,73
+7,寝室楼7,Dormitory 7,dormitory,dorm,3000,24,77
+8,寝室楼8,Dormitory 8,dormitory,dorm,3000,27,81
+9,寝室楼9,Dormitory 9,dormitory,dorm,3000,17,69
+10,寝室楼10,Dormitory 10,dormitory,dorm,3000,17,73
+11,寝室楼11,Dormitory 11,dormitory,dorm,3000,19,77
+12,寝室楼12,Dormitory 12,dormitory,dorm,3000,19,81
+13,寝室楼13,Dormitory 13,dormitory,dorm,3000,13,69
+14,寝室楼14,Dormitory 14,dormitory,dorm,3000,13,73
+15,寝室楼15,Dormitory 15,dormitory,dorm,3000,13,77
+16,寝室楼16,Dormitory 16,dormitory,dorm,3000,13,81

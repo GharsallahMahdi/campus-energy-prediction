@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+data/ashrae/train.csv
+data/ashrae/train.csv.zip
+.env
+.env.*
+!.env.example

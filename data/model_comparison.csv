@@ -1,0 +1,6 @@
+,MAE (kWh),RMSE (kWh),MAPE (%),R2
+Mean baseline,8.693,10.822,123.634,0.058
+Hourly-profile baseline,1.096,1.649,7.223,0.978
+Yesterday baseline,2.982,5.52,20.004,0.755
+Random Forest,1.067,1.635,7.076,0.978
+Random Forest + lag_24,1.348,2.063,8.965,0.966
