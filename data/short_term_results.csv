@@ -1,0 +1,7 @@
+,MAE (kWh),RMSE (kWh),MAPE (%),MAPE excl. rows,R2
+RF oracle (uses real recent data) - next 24h,1.846,2.851,8.399,5.0,0.969
+RF oracle (uses real recent data) - next 7 days,1.755,2.706,8.502,50.0,0.968
+"Random Forest (genuine, no leakage) - next 24h",1.808,2.807,8.282,5.0,0.97
+"Random Forest (genuine, no leakage) - next 7 days",1.738,2.681,8.48,50.0,0.969
+"LSTM (genuine, no leakage) - next 24h",2.101,3.32,10.121,5.0,0.958
+"LSTM (genuine, no leakage) - next 7 days",3.274,6.441,15.628,50.0,0.821
