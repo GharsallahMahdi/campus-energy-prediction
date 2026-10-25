@@ -44,6 +44,16 @@ recent_source = df[df["timestamp"] >= recent_start]
 recent = (recent_source.groupby(["building_id", "is_weekend", "hour"])
          ["consumption_kwh"].mean().round(1))
 
+forecast_path = DATA_DIR / "forecast_results.json"
+forecast_data = {}
+forecast_meta = {}
+if forecast_path.exists():
+    with open(forecast_path) as f:
+        _fc = json.load(f)
+    forecast_data = _fc["buildings"]
+    forecast_meta = {"forecast_start": _fc["forecast_start"],
+                     "first_24h_index": _fc["first_24h_index"]}
+
 alerts_path = DATA_DIR / "anomaly_alerts.csv"
 alert_counts = {}
 if alerts_path.exists():
@@ -77,6 +87,9 @@ for _, b in meta.iterrows():
         "weekday_actual": series(recent, 0),
         "weekend_actual": series(recent, 1),
         "alert_count": int(alert_counts.get(bid, 0)),
+        "forecast": forecast_data.get(bid, None),
+        "forecast_start": forecast_meta.get("forecast_start"),
+        "forecast_first_24h_index": forecast_meta.get("first_24h_index"),
     })
 
 out_json = json.dumps(result)

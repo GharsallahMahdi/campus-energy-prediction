@@ -275,6 +275,31 @@ merged = actual.merge(rf_long, on=["building_id", "timestamp"]).merge(
     lstm_long, on=["building_id", "timestamp"])
 merged_24h = merged[merged["timestamp"] <= first_test_day_end]
 
+# ---------- Export per-building forecast curves for the dashboard ----------
+# This is what lets clicking a building on the map show ITS OWN genuine
+# next-24h / next-7-days forecast (actual vs RF vs LSTM), not just an
+# average pattern. "merged" already has every building's hour-by-hour
+# recursive forecast from Part B above - we just need to save it per
+# building in a compact format.
+import json as _json
+forecast_export = {}
+for bid, bdf in merged.sort_values("timestamp").groupby("building_id"):
+    forecast_export[bid] = {
+        "hours": list(range(len(bdf))),                       # 0..167
+        "actual": bdf["consumption_kwh"].round(1).tolist(),
+        "rf_pred": bdf["rf_pred"].round(1).tolist(),
+        "lstm_pred": bdf["lstm_pred"].round(1).tolist(),
+    }
+forecast_meta = {
+    "forecast_start": str(split_date),
+    "first_24h_index": int((first_test_day_end - split_date).total_seconds() // 3600),
+    "buildings": forecast_export,
+}
+with open(DATA_DIR / "forecast_results.json", "w") as f:
+    _json.dump(forecast_meta, f)
+print(f"Exported per-building forecast curves to "
+     f"{DATA_DIR / 'forecast_results.json'} ({len(forecast_export)} buildings)")
+
 results["Random Forest (genuine, no leakage) - next 24h"] = \
     score(merged_24h["consumption_kwh"], merged_24h["rf_pred"])
 results["Random Forest (genuine, no leakage) - next 7 days"] = \

@@ -71,9 +71,14 @@ for _, b in buildings.iterrows():
     shape = patterns.get(b["building_type"], patterns["academic"])
     shape_arr = np.array(shape)[timestamps.hour]
 
-    weekday_factor = np.where(
-        (timestamps.dayofweek >= 5) & (b["building_type"] != "dorm"), 0.6, 1.0
-    )
+    # Office/teaching buildings nearly empty on weekends (no classes).
+    # Dorms ALSO drop on weekends - a meaningful share of students go home
+    # Friday evening and return Sunday, so occupancy (and electricity use)
+    # is lower, not identical to weekdays. 0.72 is a stated assumption
+    # (roughly a quarter of occupancy away), not a measured real figure.
+    is_weekend_ts = timestamps.dayofweek >= 5
+    weekday_factor = np.where(is_weekend_ts & (b["building_type"] != "dorm"), 0.6, 1.0)
+    weekday_factor = np.where(is_weekend_ts & (b["building_type"] == "dorm"), 0.72, weekday_factor)
     # Dorms are much emptier during the winter and summer academic breaks
     is_break = ((timestamps.month == 1) | (timestamps.month == 7) | (timestamps.month == 8))
     break_factor = np.where(is_break & (b["building_type"] == "dorm"), 0.4, 1.0)
