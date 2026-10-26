@@ -41,6 +41,12 @@ with open(DATA_DIR / "forecast_rooms_results.json") as f:
 with open(DATA_DIR / "room_anomaly_alerts.json") as f:
     room_alerts = json.load(f)
 
+insights_path = DATA_DIR / "insights.json"
+insights = {}
+if insights_path.exists():
+    with open(insights_path) as f:
+        insights = json.load(f)
+
 weather_path = DATA_DIR / "weather_test_week.json"
 weather_temp = None
 if weather_path.exists():
@@ -90,6 +96,7 @@ for bid in BUILDING_IDS:
         "alert_count": int(building_alert_counts.get(bid, 0)),
         "alert_message": None,
         "temperature_c": weather_temp,
+        "insight": insights.get(bid),
     }
     print(f"Built building entity {bid} ({row['name_en']})")
 
@@ -106,6 +113,7 @@ for rid in ROOM_IDS:
         "alert_count": alert_info["alert_count"],
         "alert_message": alert_info["top_message"],
         "temperature_c": weather_temp,
+        "insight": insights.get(rid),
     }
     print(f"Built room entity {rid} (alerts: {alert_info['alert_count']})")
 

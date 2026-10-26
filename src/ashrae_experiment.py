@@ -190,6 +190,79 @@ hgb.fit(train_lag[hgb_features], train_lag["meter_reading"])
 score("Gradient Boosting + lags" + (" + temperature" if use_weather else ""),
       hgb.predict(test[hgb_features]))
 
+# ---------- 8b. LSTM - same methodology as the simulated-data experiments,
+# so this is directly comparable to forecast_buildings_j9.py's results ----------
+print("Training: LSTM ...")
+import tensorflow as tf
+from tensorflow import keras
+
+LSTM_WINDOW = 24
+df["scaled"] = df["meter_reading"] / df["building_mean"]
+df["hour_sin"] = np.sin(df["hour"] / 24 * 2 * np.pi)
+df["hour_cos"] = np.cos(df["hour"] / 24 * 2 * np.pi)
+lstm_channels = ["scaled", "hour_sin", "hour_cos", "is_weekend"]
+if use_weather:
+    df["temp_scaled"] = (df["air_temperature"] - df["air_temperature"].mean()) / df["air_temperature"].std()
+    lstm_channels.append("temp_scaled")
+
+X, y, meta_rows = [], [], []
+for bid in sorted(chosen):
+    bdf = df[df.building_id == bid].sort_values("timestamp")
+    vals = bdf[lstm_channels].fillna(0).values
+    target = bdf["scaled"].values
+    times = bdf["timestamp"].values
+    for i in range(LSTM_WINDOW, len(vals)):
+        if pd.isna(bdf["meter_reading"].iloc[i]):
+            continue
+        X.append(vals[i - LSTM_WINDOW:i])
+        y.append(target[i])
+        meta_rows.append((bid, times[i]))
+X, y = np.array(X), np.array(y)
+meta_rows = pd.DataFrame(meta_rows, columns=["building_id", "timestamp"])
+meta_rows["timestamp"] = pd.to_datetime(meta_rows["timestamp"])
+is_test_row = meta_rows["timestamp"] >= TEST_START
+X_train_lstm, y_train_lstm = X[~is_test_row.values], y[~is_test_row.values]
+X_test_lstm = X[is_test_row.values]
+meta_test_lstm = meta_rows[is_test_row.values].reset_index(drop=True)
+
+lstm = keras.Sequential([
+    keras.layers.Input(shape=(LSTM_WINDOW, len(lstm_channels))),
+    keras.layers.LSTM(32),
+    keras.layers.Dense(16, activation="relu"),
+    keras.layers.Dense(1),
+])
+lstm.compile(optimizer="adam", loss="mse")
+lstm.fit(X_train_lstm, y_train_lstm, epochs=5, batch_size=512, verbose=2)
+
+lstm_pred_scaled = lstm.predict(X_test_lstm, batch_size=1024, verbose=0).flatten()
+meta_test_lstm = meta_test_lstm.merge(
+    df.drop_duplicates("building_id")[["building_id", "building_mean"]], on="building_id")
+lstm_pred_kwh = lstm_pred_scaled * meta_test_lstm["building_mean"].values
+
+# Align to the SAME test rows the other models were scored on (test_lag's
+# index order), so every model in the table is compared on identical data.
+lstm_lookup = meta_test_lstm.copy()
+lstm_lookup["pred"] = lstm_pred_kwh
+test_with_lstm = test.merge(lstm_lookup[["building_id", "timestamp", "pred"]],
+                            on=["building_id", "timestamp"], how="left")
+# Rows with no LSTM prediction (first 24h of each building's test data,
+# before a full window exists) are dropped only for the LSTM score - the
+# other models already have a full lag-based test set.
+lstm_valid = test_with_lstm["pred"].notna()
+y_test_lstm_subset = test_with_lstm.loc[lstm_valid, "meter_reading"]
+pred_lstm_subset = test_with_lstm.loc[lstm_valid, "pred"].values
+mae_l = mean_absolute_error(y_test_lstm_subset, pred_lstm_subset)
+rmse_l = np.sqrt(mean_squared_error(y_test_lstm_subset, pred_lstm_subset))
+results["LSTM" + (" + temperature" if use_weather else "")] = {
+    "MAE (kWh)": mae_l, "NMAE": mae_l / y_range,
+    "RMSE (kWh)": rmse_l, "NRMSE": rmse_l / y_range,
+    "MAPE (%)": np.mean(np.abs((y_test_lstm_subset - pred_lstm_subset)
+                               / np.maximum(y_test_lstm_subset, 1e-6))) * 100,
+    "R2": r2_score(y_test_lstm_subset, pred_lstm_subset),
+}
+predictions["LSTM" + (" + temperature" if use_weather else "")] = \
+    test_with_lstm["pred"].fillna(test_with_lstm["building_mean"]).values
+
 # ---------- 9. Results ----------
 table = pd.DataFrame(results).T.round(3)
 print("\n=== ASHRAE real-data comparison (test period: Nov-Dec 2016) ===")

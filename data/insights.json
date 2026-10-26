@@ -1,0 +1,70 @@
+{
+  "J": {
+    "peak_hours": [
+      [
+        9,
+        50.17
+      ],
+      [
+        10,
+        49.97
+      ]
+    ],
+    "peak_label": "09:00-10:00, 10:00-11:00",
+    "load_shift_suggestion": "Peak load aligns with class/office hours, as expected. Scheduling non-critical equipment (cleaning machinery, non-urgent maintenance, battery charging for shared devices) outside these hours would avoid adding to the daytime peak.",
+    "anomaly_count": 0,
+    "anomaly_sentence": "No anomalies currently flagged for Computer Building.",
+    "summary": "Computer Building: typical weekday peak around 09:00-10:00, 10:00-11:00 (~50.2 kWh). Peak load aligns with class/office hours, as expected. Scheduling non-critical equipment (cleaning machinery, non-urgent maintenance, battery charging for shared devices) outside these hours would avoid adding to the daytime peak. No anomalies currently flagged for Computer Building."
+  },
+  "9": {
+    "peak_hours": [
+      [
+        20,
+        27.25
+      ],
+      [
+        19,
+        27.01
+      ]
+    ],
+    "peak_label": "19:00-20:00, 20:00-21:00",
+    "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
+    "anomaly_count": 0,
+    "anomaly_sentence": "No anomalies currently flagged for Dormitory 9.",
+    "summary": "Dormitory 9: typical weekday peak around 19:00-20:00, 20:00-21:00 (~27.2 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. No anomalies currently flagged for Dormitory 9."
+  },
+  "9-101": {
+    "peak_hours": [
+      [
+        19,
+        1.09
+      ],
+      [
+        20,
+        1.09
+      ]
+    ],
+    "peak_label": "19:00-20:00, 20:00-21:00",
+    "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
+    "anomaly_count": 0,
+    "anomaly_sentence": "No anomalies currently flagged for Room 101.",
+    "summary": "Room 101: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.1 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. No anomalies currently flagged for Room 101."
+  },
+  "9-105": {
+    "peak_hours": [
+      [
+        20,
+        1.0
+      ],
+      [
+        19,
+        0.99
+      ]
+    ],
+    "peak_label": "19:00-20:00, 20:00-21:00",
+    "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
+    "anomaly_count": 66,
+    "anomaly_sentence": "66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected) \u2014 check if AC/equipment was left on.",
+    "summary": "Room 105: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.0 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. 66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected) \u2014 check if AC/equipment was left on."
+  }
+}

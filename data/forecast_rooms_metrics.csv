@@ -1,0 +1,5 @@
+room_id,model,MAE_kWh,RMSE_kWh,MAPE_pct,R2
+9-101,Random Forest,0.081,0.108,11.69,0.901
+9-101,LSTM,0.265,0.341,32.42,0.015
+9-105,Random Forest,0.386,0.607,29.24,0.135
+9-105,LSTM,0.587,0.834,46.74,-0.634

@@ -1,0 +1,5 @@
+building_id,model,MAE_kWh,RMSE_kWh,MAPE_pct,R2
+J,Random Forest,3.371,5.455,14.55,0.948
+J,LSTM,21.395,26.037,111.3,-0.191
+9,Random Forest,1.403,1.922,8.13,0.946
+9,LSTM,12.877,15.856,72.47,-2.688

@@ -31,6 +31,7 @@
         <button class="view-btn active" id="btn-view-profile">24h profile</button>
         <button class="view-btn" id="btn-view-history">30-day history</button>
         <button class="view-btn" id="btn-view-forecast">7-day forecast</button>
+        <button class="view-btn" id="btn-view-insights">Insights</button>
       </div>
 
       <div class="day-row" id="day-row">
@@ -43,6 +44,27 @@
       <div class="detail-sub" id="detail-sub"></div>
       <svg id="chart" viewBox="0 0 700 300" preserveAspectRatio="none"></svg>
       <div class="chart-legend" id="chart-legend"></div>
+
+      <div class="insights-panel" id="insights-panel">
+        <svg id="insight-chart" viewBox="0 0 700 220" preserveAspectRatio="none"></svg>
+        <div class="insight-chart-legend">
+          <span><span class="chip" style="background:#d9704f;"></span>Peak hour</span>
+          <span><span class="chip" style="background:#3d7ab5;"></span>Other hours</span>
+        </div>
+        <div class="insight-row">
+          <span class="insight-label">Peak load</span>
+          <span id="insight-peak"></span>
+        </div>
+        <div class="insight-row">
+          <span class="insight-label">Suggestion</span>
+          <span id="insight-suggestion"></span>
+        </div>
+        <div class="insight-row">
+          <span class="insight-label">Anomaly status</span>
+          <span id="insight-anomaly"></span>
+        </div>
+        <div class="insight-summary-box" id="insight-summary-box"></div>
+      </div>
     </div>
   </div>
 

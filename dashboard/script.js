@@ -15,6 +15,13 @@ const roomRow = document.getElementById('room-row');
 const btnViewProfile = document.getElementById('btn-view-profile');
 const btnViewHistory = document.getElementById('btn-view-history');
 const btnViewForecast = document.getElementById('btn-view-forecast');
+const btnViewInsights = document.getElementById('btn-view-insights');
+const insightsPanel = document.getElementById('insights-panel');
+const insightChart = document.getElementById('insight-chart');
+const insightPeak = document.getElementById('insight-peak');
+const insightSuggestion = document.getElementById('insight-suggestion');
+const insightAnomaly = document.getElementById('insight-anomaly');
+const insightSummaryBox = document.getElementById('insight-summary-box');
 const dayRow = document.getElementById('day-row');
 const btnWeekday = document.getElementById('btn-weekday');
 const btnWeekend = document.getElementById('btn-weekend');
@@ -109,9 +116,10 @@ detailClose.addEventListener('click', () => {
 });
 
 // ---------- View switching ----------
-btnViewProfile.addEventListener('click', () => { view = 'profile'; setActive([btnViewProfile, btnViewHistory, btnViewForecast], btnViewProfile); render(); });
-btnViewHistory.addEventListener('click', () => { view = 'history'; setActive([btnViewProfile, btnViewHistory, btnViewForecast], btnViewHistory); render(); });
-btnViewForecast.addEventListener('click', () => { view = 'forecast'; setActive([btnViewProfile, btnViewHistory, btnViewForecast], btnViewForecast); render(); });
+btnViewProfile.addEventListener('click', () => { view = 'profile'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewProfile); render(); });
+btnViewHistory.addEventListener('click', () => { view = 'history'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewHistory); render(); });
+btnViewForecast.addEventListener('click', () => { view = 'forecast'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewForecast); render(); });
+btnViewInsights.addEventListener('click', () => { view = 'insights'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewInsights); render(); });
 btnWeekday.addEventListener('click', () => { dayType = 'weekday'; setActive([btnWeekday, btnWeekend], btnWeekday); render(); });
 btnWeekend.addEventListener('click', () => { dayType = 'weekend'; setActive([btnWeekday, btnWeekend], btnWeekend); render(); });
 
@@ -128,9 +136,63 @@ function render() {
     alertBox.classList.remove('show');
   }
 
+  const isInsights = view === 'insights';
+  chart.style.display = isInsights ? 'none' : 'block';
+  chartLegend.style.display = isInsights ? 'none' : 'flex';
+  insightsPanel.classList.toggle('show', isInsights);
+  // Insights view doesn't need the per-hour alert box - the insight
+  // summary already covers anomaly status in context.
+  if (isInsights) alertBox.classList.remove('show');
+
   if (view === 'profile') drawProfile(e);
   else if (view === 'history') drawHistory(e);
-  else drawForecast(e);
+  else if (view === 'forecast') drawForecast(e);
+  else drawInsights(e);
+}
+
+function drawInsights(e) {
+  detailSub.textContent = 'AI-based analysis: peak-load timing, load-shifting advice, and anomaly status.';
+  if (!e.insight) {
+    insightSummaryBox.textContent = 'No insights available for this entity yet - run generate_insights.py.';
+    insightPeak.textContent = '';
+    insightSuggestion.textContent = '';
+    insightAnomaly.textContent = '';
+    insightChart.innerHTML = '';
+    return;
+  }
+
+  // Bar chart: the same weekday 24h profile as the Profile tab, but with
+  // the identified peak hour(s) colored differently - so the suggestion
+  // text has a visual to point at, not just numbers.
+  const vals = e.profile.weekday;
+  const peakSet = new Set(e.insight.peak_hours.map(h => h[0]));
+  const W = 700, H = 220, padL = 36, padR = 10, padT = 10, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const barW = innerW / 24;
+  const maxVal = Math.max(...vals, 0.1) * 1.15;
+  const yFor = v => padT + innerH - (v / maxVal) * innerH;
+  let svg = '';
+  [0, 0.5, 1].forEach(f => {
+    const y = padT + innerH - f * innerH;
+    svg += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    svg += `<text x="${padL - 6}" y="${y + 4}" font-size="10" text-anchor="end" fill="var(--muted)">${(f * maxVal).toFixed(1)}</text>`;
+  });
+  vals.forEach((v, h) => {
+    const x = padL + h * barW;
+    const y = yFor(v);
+    const color = peakSet.has(h) ? '#d9704f' : '#3d7ab5';
+    svg += `<rect x="${(x + 1).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - 2).toFixed(1)}" height="${(padT + innerH - y).toFixed(1)}" fill="${color}"/>`;
+    if (h % 3 === 0) {
+      svg += `<text x="${(x + barW / 2).toFixed(1)}" y="${H - 8}" font-size="9" text-anchor="middle" fill="var(--muted)">${h}</text>`;
+    }
+  });
+  insightChart.innerHTML = svg;
+  insightPeak.textContent = `${e.insight.peak_label} (~${Math.max(...e.insight.peak_hours.map(h => h[1])).toFixed(1)} kWh)`;
+  insightSuggestion.textContent = e.insight.load_shift_suggestion;
+  insightAnomaly.textContent = e.insight.anomaly_count > 0
+    ? `${e.insight.anomaly_count} alert(s) in the recent window`
+    : 'No anomalies currently flagged';
+  insightSummaryBox.textContent = e.insight.summary;
 }
 
 function drawProfile(e) {

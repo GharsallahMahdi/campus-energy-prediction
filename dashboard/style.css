@@ -124,4 +124,36 @@ h1 { font-size: 1.4rem; margin: 0 0 4px; }
 .chart-legend { display: flex; gap: 16px; font-size: 0.82rem; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
 .chart-legend .chip { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
 
+.insights-panel { display: none; }
+.insights-panel.show { display: block; }
+#insight-chart { width: 100%; height: 150px; display: block; }
+.insight-chart-legend {
+  display: flex; gap: 14px; font-size: 0.76rem; color: var(--muted);
+  margin: 6px 0 10px;
+}
+.insight-chart-legend .chip {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px;
+}
+.insight-row {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.86rem;
+}
+.insight-row:last-of-type { border-bottom: none; }
+.insight-label {
+  flex-shrink: 0; width: 120px;
+  font-weight: 700; color: var(--accent);
+  text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.03em;
+}
+.insight-summary-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
 .footer-note { margin-top: 16px; font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
