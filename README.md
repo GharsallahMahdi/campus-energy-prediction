@@ -1,25 +1,51 @@
 # Campus Energy Consumption Prediction
 
 ## Project Overview
-This project predicts hourly electricity consumption for campus buildings and visualizes the results on an interactive campus map.
+This project develops an electricity forecasting and analysis system for the STIEI campus in Shanghai.
 
-## Current Progress
-- Prepared metadata for 37 campus buildings.
-- Generated simulated hourly electricity data.
-- Implemented a Random Forest Regressor.
-- Compared baseline and machine-learning models.
-- Tested models on the public ASHRAE dataset.
-- Developed an HTML, CSS and JavaScript dashboard.
+The STIEI electricity data is simulated. A separate experiment evaluates forecasting models using real historical building electricity data from ASHRAE.
+
+## Main Features
+- Interactive campus map and dashboard.
+- Detailed monitoring of Computer Building J and Dormitory 9.
+- Room-level monitoring for Rooms 9-101 and 9-105.
+- 24-hour profiles, 30-day history, and seven-day forecasts.
+- Random Forest and LSTM electricity forecasting.
+- Building-level and room-level anomaly detection.
+- Electricity usage insights: peak hours, load-shifting suggestions, and plain-language summaries.
+- Historical Shanghai weather integration using Open-Meteo.
+- Independent real-data validation using the ASHRAE dataset.
+
+## AI Insights Module
+The current module uses rule-based analysis to identify peak-load periods, suggest energy-saving measures, and explain abnormal electricity consumption.
+
+## Real-Data Experiment
+The ASHRAE Great Energy Predictor III experiment evaluates up to 30 educational buildings using Random Forest, LSTM, Gradient Boosting, and baseline models.
+
+The current experiment uses historical consumption lags during testing, so its results are not directly comparable to the recursive seven-day STIEI forecasts. Meter units should be verified before reporting errors as kWh.
 
 ## Project Structure
-- data/: datasets, predictions and evaluation results.
-- src/: Python scripts for simulation, training and evaluation.
-- dashboard/: interactive campus map.
-- notebooks/: space for experiments.
+- dashboard/ — interactive campus dashboard.
+- src/ — simulation, forecasting, weather, anomaly detection, and insights scripts.
+- data/ — generated data, predictions, and evaluation results.
+- notebooks/ — experiments.
 
 ## Technologies
-Python, Pandas, NumPy, scikit-learn, Matplotlib, HTML, CSS and JavaScript.
+Python, Pandas, NumPy, scikit-learn, TensorFlow/Keras, Matplotlib, HTML, CSS, and JavaScript.
 
-## Important Notes
-Campus data is currently simulated, not real school measurements.
-ASHRAE is a separate public dataset. Its large training files are not included in this repository.
+## Run the Dashboard
+From the project root, run:
+
+    python3 -m http.server 8000
+
+Then open:
+
+    http://localhost:8000/dashboard/index.html
+
+## Data Sources
+- STIEI campus electricity: simulated data.
+- Shanghai weather: Open-Meteo historical data, with December 2025 weather used as a proxy for December 2026.
+- Real building electricity: ASHRAE Great Energy Predictor III dataset from Kaggle.
+
+The large ASHRAE source datasets are not included in this repository.
+
