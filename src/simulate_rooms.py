@@ -88,22 +88,38 @@ for room_num in range(1, ROOMS_PER_BUILDING + 1):
 
 df = pd.concat(rows, ignore_index=True)
 
-# ---------- Inject one realistic anomaly: a room where the AC was left on
-# for a few days, near the end of the data (so it shows up in the last-30-
-# days view AND inside the 7-day forecast test window). Room 9-101 is kept
-# clean as a normal comparison baseline, so the two rooms show a genuine,
-# demonstrable usage difference - exactly the scenario the supervisor
-# described: "students forgot to close the air conditioner." ----
+# ---------- Inject two DIFFERENT realistic anomalies, simulating a real
+# 4-room floor: two normal rooms (9-101, 9-110) as comparison baselines,
+# and two rooms with distinct problem types, so the dashboard demonstrates
+# the detector catches more than one kind of issue, not just a repeat of
+# the same scenario. ----
 df["is_injected_anomaly"] = 0
-ANOMALY_ROOM = f"{DORM_BUILDING_ID}-105"
-mask = (df["room_id"] == ANOMALY_ROOM) & \
-      (df["timestamp"] >= f"{YEAR}-12-27 00:00") & \
-      (df["timestamp"] <= f"{YEAR}-12-29 23:00")
-df.loc[mask, "consumption_kwh"] = (df.loc[mask, "consumption_kwh"] * 2.3).round(3)
-df.loc[mask, "is_injected_anomaly"] = 1
-print(f"Injected anomaly: Room {ANOMALY_ROOM}, Dec 27-29, +130% "
-     f"(AC left on) - {mask.sum()} hours affected")
-print(f"Room 9-101 kept clean as the normal comparison baseline")
+
+
+def inject(room_id, start, end, multiplier, note):
+    mask = (df["room_id"] == room_id) & \
+          (df["timestamp"] >= start) & (df["timestamp"] <= end)
+    df.loc[mask, "consumption_kwh"] = (df.loc[mask, "consumption_kwh"] * multiplier).round(3)
+    df.loc[mask, "is_injected_anomaly"] = 1
+    print(f"  Injected: {note} ({mask.sum()} hours affected)")
+
+
+print("Injecting floor anomaly scenarios (4 tracked rooms):")
+# Room 105: AC left on continuously for a few days (daytime + night)
+inject(f"{DORM_BUILDING_ID}-105", f"{YEAR}-12-27 00:00", f"{YEAR}-12-29 23:00", 2.3,
+      "Room 105, Dec 27-29, +130% all hours (AC left on)")
+# Room 115: a DIFFERENT problem - equipment (e.g. a space heater or
+# charger left on) running only overnight, on several earlier nights -
+# a lower, narrower spike than the AC case, to show the detector catches
+# more than one pattern shape, not just one scripted scenario
+mask_nights = (df["room_id"] == f"{DORM_BUILDING_ID}-115") & \
+    (df["timestamp"].dt.hour >= 1) & (df["timestamp"].dt.hour <= 5) & \
+    (df["timestamp"] >= f"{YEAR}-12-20 00:00") & (df["timestamp"] <= f"{YEAR}-12-24 23:00")
+df.loc[mask_nights, "consumption_kwh"] = (df.loc[mask_nights, "consumption_kwh"] * 1.9).round(3)
+df.loc[mask_nights, "is_injected_anomaly"] = 1
+print(f"  Injected: Room 115, Dec 20-24, 01:00-05:00 only, +90% "
+     f"(equipment left running overnight) ({mask_nights.sum()} hours affected)")
+print("Rooms 9-101 and 9-110 kept clean as normal comparison baselines")
 
 df.to_csv(DATA_DIR / "rooms_simulated.csv", index=False)
 print(f"Created rooms_simulated.csv with {len(df):,} rows "

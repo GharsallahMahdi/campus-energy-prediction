@@ -11,8 +11,9 @@
   <h1>Campus Electricity Usage</h1>
   <p class="subtitle">
     Two buildings are active on this map: Computer Building (J) and Dormitory 9.
-    Click Dormitory 9 to drill into two individual rooms &mdash; one normal,
-    one where the AC was left on. Red ring = anomaly alert.
+    Click Dormitory 9 to drill into a 4-room floor &mdash; two normal rooms and
+    two with different real-world problems (AC left on, equipment left running
+    overnight). Red ring = anomaly alert.
   </p>
 
   <div class="map-container" id="map-container">
@@ -30,6 +31,7 @@
       <div class="view-row">
         <button class="view-btn active" id="btn-view-profile">24h profile</button>
         <button class="view-btn" id="btn-view-history">30-day history</button>
+        <button class="view-btn" id="btn-view-forecast24">24h forecast</button>
         <button class="view-btn" id="btn-view-forecast">7-day forecast</button>
         <button class="view-btn" id="btn-view-insights">Insights</button>
       </div>
@@ -37,6 +39,13 @@
       <div class="day-row" id="day-row">
         <button class="toggle-btn active" id="btn-weekday">Weekday</button>
         <button class="toggle-btn" id="btn-weekend">Weekend</button>
+      </div>
+
+      <div class="season-row" id="season-row">
+        <button class="season-btn" id="btn-winter">Winter</button>
+        <button class="season-btn" id="btn-spring">Spring</button>
+        <button class="season-btn" id="btn-summer">Summer</button>
+        <button class="season-btn" id="btn-fall">Fall</button>
       </div>
 
       <div class="alert-box" id="alert-box"></div>

@@ -177,24 +177,44 @@ for t in horizon_hours:
         results[bid]["temperature_c"].append(round(float(w["temperature_c"]), 1))
         results[bid]["humidity_pct"].append(round(float(w["humidity_pct"]), 1))
 
-# ---------- 7. Metrics (MAE, RMSE, MAPE, R2) - the table her point 2 asked for ----------
+# ---------- 7. Metrics (MAE, RMSE, MAPE, R2) - SEPARATELY for next-24h
+# and next-7-days, as her point 2 literally asked for ("next 24 hours
+# AND next 7 days"). This split was present in the original version and
+# was accidentally lost when real weather was added - restored here. ----------
+N_24H = 24
+
+
+def metric_row(bid, model_name, horizon_name, actual_vals, pred_vals):
+    a = np.array(actual_vals, dtype=float)
+    p = np.array(pred_vals, dtype=float)
+    mape = np.mean(np.abs((a - p) / np.maximum(a, 1e-6))) * 100
+    return {
+        "building_id": bid, "model": model_name, "horizon": horizon_name,
+        "MAE_kWh": round(mean_absolute_error(a, p), 3),
+        "RMSE_kWh": round(float(np.sqrt(mean_squared_error(a, p))), 3),
+        "MAPE_pct": round(float(mape), 2),
+        "R2": round(r2_score(a, p), 3),
+    }
+
+
 metric_rows = []
 for bid in BUILDING_IDS:
-    a = np.array([v for v in results[bid]["actual"] if v is not None])
-    rf_p = np.array(results[bid]["rf_pred"][:len(a)])
-    lstm_p = np.array(results[bid]["lstm_pred"][:len(a)])
-    for model_name, pred in [("Random Forest", rf_p), ("LSTM", lstm_p)]:
-        mape = np.mean(np.abs((a - pred) / np.maximum(a, 1e-6))) * 100
-        metric_rows.append({
-            "building_id": bid, "model": model_name,
-            "MAE_kWh": round(mean_absolute_error(a, pred), 3),
-            "RMSE_kWh": round(float(np.sqrt(mean_squared_error(a, pred))), 3),
-            "MAPE_pct": round(float(mape), 2),
-            "R2": round(r2_score(a, pred), 3),
-        })
+    a_full = [v for v in results[bid]["actual"] if v is not None]
+    n = len(a_full)
+    rf_full = results[bid]["rf_pred"][:n]
+    lstm_full = results[bid]["lstm_pred"][:n]
+
+    for model_name, pred_full in [("Random Forest", rf_full), ("LSTM", lstm_full)]:
+        # next-24h: the first 24 hours of the forecast horizon only
+        metric_rows.append(metric_row(bid, model_name, "next_24h",
+                                      a_full[:N_24H], pred_full[:N_24H]))
+        # next-7-days: the full 168-hour horizon
+        metric_rows.append(metric_row(bid, model_name, "next_7_days",
+                                      a_full, pred_full))
+
 metrics_df = pd.DataFrame(metric_rows)
 metrics_df.to_csv(DATA_DIR / "forecast_buildings_j9_metrics.csv", index=False)
-print("\n=== Forecast metrics (J and 9, next 7 days) ===")
+print("\n=== Forecast metrics (J and 9) - next 24h and next 7 days, separately ===")
 print(metrics_df.to_string(index=False))
 
 # ---------- 8. Save into forecast_results.json ----------

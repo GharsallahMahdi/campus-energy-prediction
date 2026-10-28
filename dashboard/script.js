@@ -15,6 +15,7 @@ const roomRow = document.getElementById('room-row');
 const btnViewProfile = document.getElementById('btn-view-profile');
 const btnViewHistory = document.getElementById('btn-view-history');
 const btnViewForecast = document.getElementById('btn-view-forecast');
+const btnViewForecast24 = document.getElementById('btn-view-forecast24');
 const btnViewInsights = document.getElementById('btn-view-insights');
 const insightsPanel = document.getElementById('insights-panel');
 const insightChart = document.getElementById('insight-chart');
@@ -24,6 +25,13 @@ const insightAnomaly = document.getElementById('insight-anomaly');
 const insightSummaryBox = document.getElementById('insight-summary-box');
 const dayRow = document.getElementById('day-row');
 const btnWeekday = document.getElementById('btn-weekday');
+const seasonRow = document.getElementById('season-row');
+const seasonBtns = {
+  winter: document.getElementById('btn-winter'),
+  spring: document.getElementById('btn-spring'),
+  summer: document.getElementById('btn-summer'),
+  fall: document.getElementById('btn-fall'),
+};
 const btnWeekend = document.getElementById('btn-weekend');
 const alertBox = document.getElementById('alert-box');
 const detailSub = document.getElementById('detail-sub');
@@ -36,6 +44,7 @@ let openBuildingId = null;  // 'J' or '9' - which marker is open
 let currentId = null;       // the entity currently shown in the panel
 let view = 'profile';
 let dayType = 'weekday';
+let season = 'winter';  // default, since the forecast test week falls in winter
 
 function setActive(group, active) {
   group.forEach(el => el.classList.toggle('active', el === active));
@@ -116,18 +125,30 @@ detailClose.addEventListener('click', () => {
 });
 
 // ---------- View switching ----------
-btnViewProfile.addEventListener('click', () => { view = 'profile'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewProfile); render(); });
-btnViewHistory.addEventListener('click', () => { view = 'history'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewHistory); render(); });
-btnViewForecast.addEventListener('click', () => { view = 'forecast'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewForecast); render(); });
-btnViewInsights.addEventListener('click', () => { view = 'insights'; setActive([btnViewProfile, btnViewHistory, btnViewForecast, btnViewInsights], btnViewInsights); render(); });
+const allViewBtns = [btnViewProfile, btnViewHistory, btnViewForecast24, btnViewForecast, btnViewInsights];
+btnViewProfile.addEventListener('click', () => { view = 'profile'; setActive(allViewBtns, btnViewProfile); render(); });
+btnViewHistory.addEventListener('click', () => { view = 'history'; setActive(allViewBtns, btnViewHistory); render(); });
+btnViewForecast24.addEventListener('click', () => { view = 'forecast24'; setActive(allViewBtns, btnViewForecast24); render(); });
+btnViewForecast.addEventListener('click', () => { view = 'forecast'; setActive(allViewBtns, btnViewForecast); render(); });
+btnViewInsights.addEventListener('click', () => { view = 'insights'; setActive(allViewBtns, btnViewInsights); render(); });
 btnWeekday.addEventListener('click', () => { dayType = 'weekday'; setActive([btnWeekday, btnWeekend], btnWeekday); render(); });
 btnWeekend.addEventListener('click', () => { dayType = 'weekend'; setActive([btnWeekday, btnWeekend], btnWeekend); render(); });
+
+Object.entries(seasonBtns).forEach(([key, btn]) => {
+  btn.addEventListener('click', () => {
+    season = key;
+    setActive(Object.values(seasonBtns), btn);
+    render();
+  });
+});
+setActive(Object.values(seasonBtns), seasonBtns[season]);  // mark the default active on load
 
 // ---------- Render the panel's chart ----------
 function render() {
   const e = data.entities[currentId];
   detailTitle.textContent = e.name;
   dayRow.style.display = view === 'profile' ? 'flex' : 'none';
+  seasonRow.style.display = view === 'profile' ? 'flex' : 'none';
 
   if (e.alert_message) {
     alertBox.textContent = e.alert_message;
@@ -146,8 +167,15 @@ function render() {
 
   if (view === 'profile') drawProfile(e);
   else if (view === 'history') drawHistory(e);
-  else if (view === 'forecast') drawForecast(e);
+  else if (view === 'forecast24') drawForecast(e, true);
+  else if (view === 'forecast') drawForecast(e, false);
   else drawInsights(e);
+}
+
+// Accurate, dynamic description of which weather was actually used -
+// instead of a hardcoded claim that could silently go stale.
+function weatherDescription() {
+  return data.weather_source_description || 'Weather data for the forecast period.';
 }
 
 function drawInsights(e) {
@@ -189,16 +217,19 @@ function drawInsights(e) {
   insightChart.innerHTML = svg;
   insightPeak.textContent = `${e.insight.peak_label} (~${Math.max(...e.insight.peak_hours.map(h => h[1])).toFixed(1)} kWh)`;
   insightSuggestion.textContent = e.insight.load_shift_suggestion;
+  const cost = e.total_extra_cost_rmb || 0;
   insightAnomaly.textContent = e.insight.anomaly_count > 0
-    ? `${e.insight.anomaly_count} alert(s) in the recent window`
+    ? `${e.insight.anomaly_count} alert(s) in the recent window \u2014 an estimated \u00a5${cost.toFixed(2)} extra cost`
     : 'No anomalies currently flagged';
   insightSummaryBox.textContent = e.insight.summary;
 }
 
 function drawProfile(e) {
-  const vals = e.profile[dayType];
-  const other = e.profile[dayType === 'weekday' ? 'weekend' : 'weekday'];
-  detailSub.textContent = `Typical ${dayType} pattern, averaged over the year (excluding academic-break days and injected anomalies).`;
+  const seasonData = (e.profile.by_season && e.profile.by_season[season]) || e.profile;
+  const vals = seasonData[dayType];
+  const other = seasonData[dayType === 'weekday' ? 'weekend' : 'weekday'];
+  const seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
+  detailSub.textContent = `Typical ${dayType} pattern in ${seasonLabel}, averaged across that season's days (excluding academic-break days and injected anomalies).`;
   chartLegend.innerHTML = `<span><span class="chip" style="background:#2f7d5f;"></span>Typical consumption (kWh)</span>`;
   // Fixed scale shared between weekday and weekend, so switching the
   // toggle actually shows the curve sitting lower/higher - not just
@@ -232,30 +263,51 @@ function drawHistory(e) {
   chart.innerHTML = svg;
 }
 
-function drawForecast(e) {
+function drawForecast(e, only24h) {
   if (!e.forecast) {
     detailSub.textContent = 'No forecast available.';
     chart.innerHTML = ''; chartLegend.innerHTML = '';
     return;
   }
-  const { actual, rf_pred, lstm_pred } = e.forecast;
-  const cutoff = data.first_24h_index != null ? data.first_24h_index : 23;
-  detailSub.innerHTML = `Genuine next-24h / next-7-days forecast (no data leakage), starting ${data.forecast_start ? data.forecast_start.split(' ')[0] : ''}. Dashed = end of "next 24h". Orange = Shanghai air temperature (real monthly climate normals), a real input feature for both models.`;
+  const n24 = data.first_24h_index != null ? data.first_24h_index + 1 : 24;
+  const sliceTo = only24h ? n24 : e.forecast.actual.length;
+  const actual = e.forecast.actual.slice(0, sliceTo);
+  const rf_pred = e.forecast.rf_pred.slice(0, sliceTo);
+  const lstm_pred = e.forecast.lstm_pred.slice(0, sliceTo);
+  const cutoff = only24h ? null : (data.first_24h_index != null ? data.first_24h_index : 23);
+  const startLabel = data.forecast_start ? data.forecast_start.split(' ')[0] : '';
+
+  const horizonLabel = only24h ? 'next 24 hours' : 'next 7 days (next-24h marked with a dashed line)';
+  detailSub.innerHTML = `Genuine ${horizonLabel} forecast (no data leakage), starting ${startLabel}. `
+    + `Orange = Shanghai air temperature, a real input feature for both models. `
+    + `<span style="opacity:0.85;">${weatherDescription()}</span>`;
   chartLegend.innerHTML = `
     <span><span class="chip" style="background:#1c2321;"></span>Actual (kWh)</span>
     <span><span class="chip" style="background:#3d7ab5;"></span>Random Forest</span>
     <span><span class="chip" style="background:#2f7d5f;"></span>LSTM</span>
     <span><span class="chip" style="background:#e3923c;"></span>Temperature (\u00b0C, right axis)</span>`;
+
   const n = actual.length;
   const maxVal = Math.max(...actual.filter(v => v != null), ...rf_pred, ...lstm_pred, 0.1) * 1.15;
-  // Detailed ticks: every 12 hours, labeled "D1 00h", "D1 12h", "D2 00h", ...
-  const detailTicks = [];
-  for (let h = 0; h < n; h += 12) detailTicks.push(h);
-  if (detailTicks[detailTicks.length - 1] !== n - 1) detailTicks.push(n - 1);
-  const tickLabel = h => `D${Math.floor(h / 24) + 1} ${String(h % 24).padStart(2, '0')}h`;
-  const { xFor, yFor, svgAxes, W, padT, padB, H } = buildAxes(n, maxVal, detailTicks, tickLabel, 8.5);
+
+  let detailTicks, tickLabel;
+  if (only24h) {
+    // Hourly ticks, like the 24h profile view
+    detailTicks = Array.from({ length: n }, (_, h) => h);
+    tickLabel = h => String(h);
+  } else {
+    // Every 12 hours, labeled "D1 00h", "D1 12h", "D2 00h", ...
+    detailTicks = [];
+    for (let h = 0; h < n; h += 12) detailTicks.push(h);
+    if (detailTicks[detailTicks.length - 1] !== n - 1) detailTicks.push(n - 1);
+    tickLabel = h => `D${Math.floor(h / 24) + 1} ${String(h % 24).padStart(2, '0')}h`;
+  }
+
+  const { xFor, yFor, svgAxes, W, padT, padB, H } = buildAxes(n, maxVal, detailTicks, tickLabel, only24h ? 9 : 8.5);
   let svg = svgAxes;
-  svg += `<line x1="${xFor(cutoff)}" y1="14" x2="${xFor(cutoff)}" y2="266" stroke="#888" stroke-width="1" stroke-dasharray="3,3"/>`;
+  if (cutoff != null) {
+    svg += `<line x1="${xFor(cutoff)}" y1="14" x2="${xFor(cutoff)}" y2="266" stroke="#888" stroke-width="1" stroke-dasharray="3,3"/>`;
+  }
 
   if (e.temperature_c) {
     const temps = e.temperature_c.slice(0, n);
@@ -264,7 +316,6 @@ function drawForecast(e) {
     const innerH = H - padT - padB;
     const yForTemp = v => padT + innerH - ((v - tMin) / tRange) * innerH * 0.9 - innerH * 0.05;
     svg += linePath(temps, xFor, yForTemp, '#e3923c', 1.8, true);
-    // right-axis labels for temperature
     [tMin, (tMin + tMax) / 2, tMax].forEach(v => {
       const y = yForTemp(v);
       svg += `<text x="${W - 4}" y="${y + 4}" font-size="11" text-anchor="end" fill="#e3923c" opacity="0.85">${v.toFixed(0)}\u00b0</text>`;
@@ -275,8 +326,10 @@ function drawForecast(e) {
   svg += linePath(rf_pred, xFor, yFor, '#3d7ab5', 2);
   svg += linePath(lstm_pred, xFor, yFor, '#2f7d5f', 2);
 
-  // Markers every 6 hours (every point would be too dense at 168 hours)
-  for (let h = 0; h < n; h += 6) {
+  // In the 24h view, mark every point; in the 7-day view, every 6th
+  // (168 individual points would be too dense to read).
+  const markerStep = only24h ? 1 : 6;
+  for (let h = 0; h < n; h += markerStep) {
     if (actual[h] != null) svg += `<circle cx="${xFor(h).toFixed(1)}" cy="${yFor(actual[h]).toFixed(1)}" r="2.4" fill="#1c2321"/>`;
     svg += `<circle cx="${xFor(h).toFixed(1)}" cy="${yFor(rf_pred[h]).toFixed(1)}" r="2.2" fill="#3d7ab5"/>`;
     svg += `<circle cx="${xFor(h).toFixed(1)}" cy="${yFor(lstm_pred[h]).toFixed(1)}" r="2.2" fill="#2f7d5f"/>`;

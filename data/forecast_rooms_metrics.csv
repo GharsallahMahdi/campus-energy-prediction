@@ -1,5 +1,17 @@
-room_id,model,MAE_kWh,RMSE_kWh,MAPE_pct,R2
-9-101,Random Forest,0.081,0.108,11.69,0.901
-9-101,LSTM,0.265,0.341,32.42,0.015
-9-105,Random Forest,0.386,0.607,29.24,0.135
-9-105,LSTM,0.587,0.834,46.74,-0.634
+room_id,model,horizon,MAE_kWh,RMSE_kWh,MAPE_pct,R2
+9-101,Random Forest,next_24h,0.062,0.082,8.74,0.925
+9-101,Random Forest,next_7_days,0.084,0.114,12.87,0.89
+9-101,LSTM,next_24h,0.2,0.248,23.56,0.309
+9-101,LSTM,next_7_days,0.277,0.345,35.02,-0.006
+9-105,Random Forest,next_24h,0.074,0.11,9.84,0.901
+9-105,Random Forest,next_7_days,0.378,0.59,29.19,0.183
+9-105,LSTM,next_24h,0.183,0.268,20.61,0.419
+9-105,LSTM,next_7_days,0.597,0.822,49.64,-0.588
+9-110,Random Forest,next_24h,0.105,0.137,11.4,0.901
+9-110,Random Forest,next_7_days,0.101,0.13,12.57,0.907
+9-110,LSTM,next_24h,0.238,0.318,22.02,0.466
+9-110,LSTM,next_7_days,0.324,0.417,33.84,0.046
+9-115,Random Forest,next_24h,0.136,0.196,15.88,0.84
+9-115,Random Forest,next_7_days,0.185,0.276,24.22,0.66
+9-115,LSTM,next_24h,0.265,0.362,21.51,0.456
+9-115,LSTM,next_7_days,0.362,0.454,33.7,0.084

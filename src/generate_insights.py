@@ -32,7 +32,7 @@ import pandas as pd
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 BUILDING_IDS = ["J", "9"]
-ROOM_IDS = ["9-101", "9-105"]
+ROOM_IDS = ["9-101", "9-105", "9-110", "9-115"]
 
 PEAK_N = 2  # how many peak hours to report per entity
 

@@ -26,7 +26,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAP2_DIR = Path(__file__).resolve().parent.parent / "dashboard-map2"
 
 BUILDING_IDS = ["J", "9"]
-ROOM_IDS = ["9-101", "9-105"]
+ROOM_IDS = ["9-101", "9-105", "9-110", "9-115"]
 
 buildings_df = pd.read_csv(DATA_DIR / "campus_energy_simulated.csv",
                            dtype={"building_id": str}, parse_dates=["timestamp"])
@@ -49,27 +49,53 @@ if insights_path.exists():
 
 weather_path = DATA_DIR / "weather_test_week.json"
 weather_temp = None
+weather_source_type = "simulated"
+weather_source_description = ""
 if weather_path.exists():
     with open(weather_path) as f:
-        weather_temp = json.load(f)["temperature_c"]
+        _wd = json.load(f)
+    weather_temp = _wd["temperature_c"]
+    weather_source_type = _wd.get("source_type", "simulated")
+    weather_source_description = _wd.get("source_description", "")
 
 building_alert_counts = {}
+building_alert_costs = {}
 alerts_path = DATA_DIR / "anomaly_alerts.csv"
 if alerts_path.exists():
     alerts = pd.read_csv(alerts_path, dtype={"building_id": str}, parse_dates=["timestamp"])
     recent_start = buildings_df["timestamp"].max() - pd.Timedelta(days=13)
     recent_alerts = alerts[alerts["timestamp"] >= recent_start]
     building_alert_counts = recent_alerts["building_id"].value_counts().to_dict()
+    if "extra_cost_rmb" in recent_alerts.columns:
+        building_alert_costs = recent_alerts.groupby("building_id")["extra_cost_rmb"].sum().round(2).to_dict()
+
+
+SEASONS = ["winter", "spring", "summer", "fall"]
 
 
 def typical_profile(df, id_col, entity_id):
+    """Returns the typical weekday/weekend pattern POOLED across the whole
+    year (kept for backward compatibility - the Insights tab uses this),
+    PLUS a by_season breakdown (winter/spring/summer/fall x weekday/weekend)
+    for the dashboard's season selector."""
     sub = df[(df[id_col] == entity_id) & (df["is_break"] == 0)]
     if "is_injected_anomaly" in sub.columns:
         sub = sub[sub["is_injected_anomaly"] == 0]
+
     prof = sub.groupby(["is_weekend", "hour"])["consumption_kwh"].mean().round(2)
+    by_season = {}
+    for season in SEASONS:
+        s_sub = sub[sub["season"] == season] if "season" in sub.columns else sub
+        s_prof = s_sub.groupby(["is_weekend", "hour"])["consumption_kwh"].mean().round(2)
+        by_season[season] = {
+            "weekday": [float(s_prof.get((0, h), 0)) for h in range(24)],
+            "weekend": [float(s_prof.get((1, h), 0)) for h in range(24)],
+        }
+
     return {
         "weekday": [float(prof.get((0, h), 0)) for h in range(24)],
         "weekend": [float(prof.get((1, h), 0)) for h in range(24)],
+        "by_season": by_season,
     }
 
 
@@ -95,6 +121,7 @@ for bid in BUILDING_IDS:
         "forecast": building_forecasts.get(bid),
         "alert_count": int(building_alert_counts.get(bid, 0)),
         "alert_message": None,
+        "total_extra_cost_rmb": float(building_alert_costs.get(bid, 0)),
         "temperature_c": weather_temp,
         "insight": insights.get(bid),
     }
@@ -112,6 +139,7 @@ for rid in ROOM_IDS:
         "forecast": room_forecast_raw["rooms"].get(rid),
         "alert_count": alert_info["alert_count"],
         "alert_message": alert_info["top_message"],
+        "total_extra_cost_rmb": float(alert_info.get("total_extra_cost_rmb", 0)),
         "temperature_c": weather_temp,
         "insight": insights.get(rid),
     }
@@ -126,6 +154,8 @@ output = {
     "room_ids": ROOM_IDS,
     "forecast_start": _fc_meta["forecast_start"],
     "first_24h_index": _fc_meta["first_24h_index"],
+    "weather_source_type": weather_source_type,
+    "weather_source_description": weather_source_description,
     "entities": entities,
 }
 

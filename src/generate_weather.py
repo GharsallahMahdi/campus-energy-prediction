@@ -33,6 +33,8 @@ output = {
     "timestamps": [str(t) for t in weather["timestamp"]],
     "temperature_c": weather["temperature_c"].tolist(),
     "humidity_pct": weather["humidity_pct"].tolist(),
+    "source_type": weather.attrs.get("source_type", "simulated"),
+    "source_description": weather.attrs.get("source_description", ""),
 }
 with open(DATA_DIR / "weather_test_week.json", "w") as f:
     json.dump(output, f)

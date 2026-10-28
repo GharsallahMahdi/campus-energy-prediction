@@ -31,7 +31,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from weather_source import get_horizon_weather, MONTHLY_TEMP_C, MONTHLY_HUMIDITY
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-ROOM_IDS = ["9-101", "9-105"]
+ROOM_IDS = ["9-101", "9-105", "9-110", "9-115"]
 TEST_DAYS = 7
 LSTM_WINDOW = 24
 RF_TRAIN_DAYS = 45
@@ -74,14 +74,14 @@ for ts, row in horizon_weather.iterrows():
 feature_cols = ["hour", "day_of_week", "is_weekend", "month",
                 "temperature_c", "humidity_pct", "lag_24", "lag_168"]
 
-print("Training Random Forest on rooms 9-101 and 9-105...")
+print(f"Training Random Forest on rooms {', '.join(ROOM_IDS)}...")
 train_rf = df[(df["timestamp"] < split_date) & (df["timestamp"] >= rf_train_start)] \
     .dropna(subset=["lag_24", "lag_168"])
 rf = RandomForestRegressor(n_estimators=100, max_depth=16, min_samples_leaf=2,
                            random_state=42, n_jobs=-1)
 rf.fit(train_rf[feature_cols], train_rf["consumption_kwh"])
 
-print("Training LSTM on rooms 9-101 and 9-105...")
+print(f"Training LSTM on rooms {', '.join(ROOM_IDS)}...")
 import tensorflow as tf
 from tensorflow import keras
 
@@ -163,24 +163,38 @@ for t in horizon_hours:
         results[rid]["temperature_c"].append(round(float(w["temperature_c"]), 1))
         results[rid]["humidity_pct"].append(round(float(w["humidity_pct"]), 1))
 
-# ---------- Metrics table ----------
+# ---------- Metrics table - SEPARATELY for next-24h and next-7-days ----------
+N_24H = 24
+
+
+def metric_row(rid, model_name, horizon_name, actual_vals, pred_vals):
+    a = np.array(actual_vals, dtype=float)
+    p = np.array(pred_vals, dtype=float)
+    mape = np.mean(np.abs((a - p) / np.maximum(a, 1e-6))) * 100
+    return {
+        "room_id": rid, "model": model_name, "horizon": horizon_name,
+        "MAE_kWh": round(mean_absolute_error(a, p), 3),
+        "RMSE_kWh": round(float(np.sqrt(mean_squared_error(a, p))), 3),
+        "MAPE_pct": round(float(mape), 2),
+        "R2": round(r2_score(a, p), 3),
+    }
+
+
 metric_rows = []
 for rid in ROOM_IDS:
-    a = np.array([v for v in results[rid]["actual"] if v is not None])
-    rf_p = np.array(results[rid]["rf_pred"][:len(a)])
-    lstm_p = np.array(results[rid]["lstm_pred"][:len(a)])
-    for model_name, pred in [("Random Forest", rf_p), ("LSTM", lstm_p)]:
-        mape = np.mean(np.abs((a - pred) / np.maximum(a, 1e-6))) * 100
-        metric_rows.append({
-            "room_id": rid, "model": model_name,
-            "MAE_kWh": round(mean_absolute_error(a, pred), 3),
-            "RMSE_kWh": round(float(np.sqrt(mean_squared_error(a, pred))), 3),
-            "MAPE_pct": round(float(mape), 2),
-            "R2": round(r2_score(a, pred), 3),
-        })
+    a_full = [v for v in results[rid]["actual"] if v is not None]
+    n = len(a_full)
+    rf_full = results[rid]["rf_pred"][:n]
+    lstm_full = results[rid]["lstm_pred"][:n]
+    for model_name, pred_full in [("Random Forest", rf_full), ("LSTM", lstm_full)]:
+        metric_rows.append(metric_row(rid, model_name, "next_24h",
+                                      a_full[:N_24H], pred_full[:N_24H]))
+        metric_rows.append(metric_row(rid, model_name, "next_7_days",
+                                      a_full, pred_full))
+
 metrics_df = pd.DataFrame(metric_rows)
 metrics_df.to_csv(DATA_DIR / "forecast_rooms_metrics.csv", index=False)
-print("\n=== Forecast metrics (rooms, next 7 days) ===")
+print("\n=== Forecast metrics (rooms) - next 24h and next 7 days, separately ===")
 print(metrics_df.to_string(index=False))
 
 output = {

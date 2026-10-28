@@ -69,6 +69,12 @@ df["pct_above_typical"] = (df["ratio"] - 1) * 100
 
 flagged = df[(df["ratio"] >= HOURLY_THRESHOLD) & (df["typical_kwh"] >= MIN_TYPICAL_KWH)].copy()
 
+# Extra cost of each flagged hour: the excess kWh above typical, priced at
+# the same real Shanghai rate used for the monthly bill alerts - so every
+# alert says not just "how unusual" but "how much extra this cost."
+flagged["extra_kwh"] = (flagged["consumption_kwh"] - flagged["typical_kwh"]).clip(lower=0)
+flagged["extra_cost_rmb"] = (flagged["extra_kwh"] * PRICE_PER_KWH).round(2)
+
 
 def hourly_message(row):
     pct = round(row["pct_above_typical"])
@@ -78,12 +84,14 @@ def hourly_message(row):
         if pct < 150 else "check immediately - this is a large, unusual spike"
     return (f"{row['name_en']} ({row['building_id']}) at {time_str} is {pct}% above "
            f"the typical {day_kind} pattern for this time ({row['consumption_kwh']:.1f} kWh "
-           f"vs. {row['typical_kwh']:.1f} kWh expected) - {hint}.")
+           f"vs. {row['typical_kwh']:.1f} kWh expected, an extra \u00a5{row['extra_cost_rmb']:.2f} "
+           f"for that hour) - {hint}.")
 
 
 flagged["message"] = flagged.apply(hourly_message, axis=1)
 flagged_out = flagged[["building_id", "name_en", "timestamp", "consumption_kwh",
-                       "typical_kwh", "pct_above_typical", "is_injected_anomaly", "message"]]
+                       "typical_kwh", "pct_above_typical", "extra_kwh", "extra_cost_rmb",
+                       "is_injected_anomaly", "message"]]
 flagged_out = flagged_out.sort_values("pct_above_typical", ascending=False)
 flagged_out.to_csv(DATA_DIR / "anomaly_alerts.csv", index=False)
 

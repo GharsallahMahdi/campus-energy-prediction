@@ -64,7 +64,41 @@
     "peak_label": "19:00-20:00, 20:00-21:00",
     "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
     "anomaly_count": 66,
-    "anomaly_sentence": "66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected) \u2014 check if AC/equipment was left on.",
-    "summary": "Room 105: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.0 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. 66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected) \u2014 check if AC/equipment was left on."
+    "anomaly_sentence": "66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected, an extra \u00a50.76 for that hour) \u2014 check if AC/equipment was left on.",
+    "summary": "Room 105: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.0 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. 66 anomaly alert(s) were flagged for Room 105 in the last 14-30 days. \u26a0 Room 105 on Dec 29, 00:00 is 222% above typical (2.06 kWh vs 0.64 kWh expected, an extra \u00a50.76 for that hour) \u2014 check if AC/equipment was left on."
+  },
+  "9-110": {
+    "peak_hours": [
+      [
+        20,
+        1.32
+      ],
+      [
+        19,
+        1.31
+      ]
+    ],
+    "peak_label": "19:00-20:00, 20:00-21:00",
+    "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
+    "anomaly_count": 3,
+    "anomaly_sentence": "3 anomaly alert(s) were flagged for Room 110 in the last 14-30 days. \u26a0 Room 110 on Dec 28, 14:00 is 50% above typical (0.79 kWh vs 0.52 kWh expected, an extra \u00a50.14 for that hour) \u2014 check if AC/equipment was left on.",
+    "summary": "Room 110: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.3 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. 3 anomaly alert(s) were flagged for Room 110 in the last 14-30 days. \u26a0 Room 110 on Dec 28, 14:00 is 50% above typical (0.79 kWh vs 0.52 kWh expected, an extra \u00a50.14 for that hour) \u2014 check if AC/equipment was left on."
+  },
+  "9-115": {
+    "peak_hours": [
+      [
+        19,
+        1.49
+      ],
+      [
+        20,
+        1.48
+      ]
+    ],
+    "peak_label": "19:00-20:00, 20:00-21:00",
+    "load_shift_suggestion": "Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak.",
+    "anomaly_count": 25,
+    "anomaly_sentence": "25 anomaly alert(s) were flagged for Room 115 in the last 14-30 days. \u26a0 Room 115 on Dec 23, 05:00 is 136% above typical (1.59 kWh vs 0.67 kWh expected, an extra \u00a50.49 for that hour) \u2014 check if AC/equipment was left on.",
+    "summary": "Room 115: typical weekday peak around 19:00-20:00, 20:00-21:00 (~1.5 kWh). Peak load falls in the evening, when students return and use appliances together. Consider encouraging laundry, water heaters and chargers to run before 18:00 or after 22:00 to flatten this peak. 25 anomaly alert(s) were flagged for Room 115 in the last 14-30 days. \u26a0 Room 115 on Dec 23, 05:00 is 136% above typical (1.59 kWh vs 0.67 kWh expected, an extra \u00a50.49 for that hour) \u2014 check if AC/equipment was left on."
   }
 }

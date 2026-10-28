@@ -1,5 +1,9 @@
-building_id,model,MAE_kWh,RMSE_kWh,MAPE_pct,R2
-J,Random Forest,3.371,5.455,14.55,0.948
-J,LSTM,21.395,26.037,111.3,-0.191
-9,Random Forest,1.403,1.922,8.13,0.946
-9,LSTM,12.877,15.856,72.47,-2.688
+building_id,model,horizon,MAE_kWh,RMSE_kWh,MAPE_pct,R2
+J,Random Forest,next_24h,1.867,2.923,5.98,0.986
+J,Random Forest,next_7_days,3.371,5.455,14.55,0.948
+J,LSTM,next_24h,7.731,9.589,34.05,0.845
+J,LSTM,next_7_days,16.013,21.573,83.77,0.183
+9,Random Forest,next_24h,1.005,1.17,5.97,0.982
+9,Random Forest,next_7_days,1.403,1.922,8.13,0.946
+9,LSTM,next_24h,4.082,5.771,18.11,0.557
+9,LSTM,next_7_days,8.478,12.078,43.83,-1.14

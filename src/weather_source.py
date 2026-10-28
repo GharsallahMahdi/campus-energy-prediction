@@ -50,14 +50,23 @@ def get_horizon_weather(horizon_timestamps, seed=42):
         real = pd.read_csv(real_path, parse_dates=["timestamp"]).sort_values("timestamp")
         if len(real) >= len(horizon_timestamps):
             real = real.iloc[:len(horizon_timestamps)].reset_index(drop=True)
+            real_start = real["timestamp"].iloc[0].strftime("%b %d, %Y")
+            real_end = real["timestamp"].iloc[-1].strftime("%b %d, %Y")
             print(f"[weather_source] Using REAL recorded Shanghai weather from "
-                 f"{real['timestamp'].iloc[0]} to {real['timestamp'].iloc[-1]} "
+                 f"{real_start} to {real_end} "
                  f"({real_path.name}), aligned positionally to the forecast week.")
-            return pd.DataFrame({
+            result = pd.DataFrame({
                 "timestamp": horizon_timestamps,
                 "temperature_c": real["temperature_c"].values,
                 "humidity_pct": real["humidity_pct"].values,
             })
+            result.attrs["source_type"] = "real"
+            result.attrs["source_description"] = (
+                f"Real recorded Shanghai weather from {real_start}\u2013{real_end}, "
+                f"used as a stand-in for this forecast week since true future "
+                f"weather does not exist yet."
+            )
+            return result
         else:
             print(f"[weather_source] {real_path.name} found but has fewer rows "
                  f"than needed ({len(real)} < {len(horizon_timestamps)}) - "
@@ -77,8 +86,15 @@ def get_horizon_weather(horizon_timestamps, seed=42):
     temperature_c = (base_temp + daily_swing + rng.normal(0, 1.0, len(horizon_timestamps))).round(1)
     humidity_pct = np.clip(base_hum - 0.5 * daily_swing + rng.normal(0, 4, len(horizon_timestamps)), 15, 100).round(1)
 
-    return pd.DataFrame({
+    result = pd.DataFrame({
         "timestamp": horizon_timestamps,
         "temperature_c": temperature_c,
         "humidity_pct": humidity_pct,
     })
+    result.attrs["source_type"] = "simulated"
+    result.attrs["source_description"] = (
+        "Simulated weather grounded in real Shanghai monthly climate normals "
+        "(temperature and humidity averages), not actual hourly records. "
+        "Run fetch_real_weather.py to use genuinely real recorded weather instead."
+    )
+    return result
