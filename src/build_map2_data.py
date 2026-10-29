@@ -41,6 +41,36 @@ with open(DATA_DIR / "forecast_rooms_results.json") as f:
 with open(DATA_DIR / "room_anomaly_alerts.json") as f:
     room_alerts = json.load(f)
 
+comparison_path = DATA_DIR / "unified_model_comparison.csv"
+per_entity_performance = {}
+ashrae_performance = []
+if comparison_path.exists():
+    cmp_df = pd.read_csv(comparison_path)
+    sim = cmp_df[cmp_df.dataset == "Simulated STIEI"]
+    for entity_id, g in sim.groupby("entity"):
+        entity_id = str(entity_id)
+        by_horizon = {}
+        for horizon, hg in g.groupby("horizon"):
+            by_horizon[horizon] = [
+                {"model": r["model"], "MAE": r["MAE"], "RMSE": r["RMSE"],
+                 "MAPE_pct": r["MAPE_pct"], "R2": r["R2"]}
+                for _, r in hg.iterrows()
+            ]
+        per_entity_performance[entity_id] = by_horizon
+
+    ashrae = cmp_df[cmp_df.dataset == "Real ASHRAE/BDG2"]
+    for _, r in ashrae.iterrows():
+        ashrae_performance.append({
+            "model": r["model"], "MAE": r["MAE"], "RMSE": r["RMSE"],
+            "MAPE_pct": r["MAPE_pct"], "R2": r["R2"],
+            "entity": r["entity"], "evaluation_method": r["evaluation_method"], "unit": r["unit"],
+        })
+    print(f"Loaded model performance for {len(per_entity_performance)} entities "
+         f"and {len(ashrae_performance)} ASHRAE rows from unified_model_comparison.csv")
+else:
+    print(f"No {comparison_path.name} found - Model Performance tab will be empty. "
+         f"Run build_comparison_table.py first if you want it populated.")
+
 insights_path = DATA_DIR / "insights.json"
 insights = {}
 if insights_path.exists():
@@ -124,6 +154,7 @@ for bid in BUILDING_IDS:
         "total_extra_cost_rmb": float(building_alert_costs.get(bid, 0)),
         "temperature_c": weather_temp,
         "insight": insights.get(bid),
+        "model_performance": per_entity_performance.get(bid),
     }
     print(f"Built building entity {bid} ({row['name_en']})")
 
@@ -142,6 +173,7 @@ for rid in ROOM_IDS:
         "total_extra_cost_rmb": float(alert_info.get("total_extra_cost_rmb", 0)),
         "temperature_c": weather_temp,
         "insight": insights.get(rid),
+        "model_performance": per_entity_performance.get(rid),
     }
     print(f"Built room entity {rid} (alerts: {alert_info['alert_count']})")
 
@@ -156,6 +188,7 @@ output = {
     "first_24h_index": _fc_meta["first_24h_index"],
     "weather_source_type": weather_source_type,
     "weather_source_description": weather_source_description,
+    "ashrae_performance": ashrae_performance,
     "entities": entities,
 }
 

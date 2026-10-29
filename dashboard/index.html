@@ -34,6 +34,7 @@
         <button class="view-btn" id="btn-view-forecast24">24h forecast</button>
         <button class="view-btn" id="btn-view-forecast">7-day forecast</button>
         <button class="view-btn" id="btn-view-insights">Insights</button>
+        <button class="view-btn" id="btn-view-performance">Model performance</button>
       </div>
 
       <div class="day-row" id="day-row">
@@ -73,6 +74,14 @@
           <span id="insight-anomaly"></span>
         </div>
         <div class="insight-summary-box" id="insight-summary-box"></div>
+      </div>
+
+      <div class="performance-panel" id="performance-panel">
+        <h3 class="perf-heading">Random Forest vs. LSTM &mdash; this entity</h3>
+        <div id="perf-sim-tables"></div>
+        <h3 class="perf-heading">Validated on real data (ASHRAE / BDG2)</h3>
+        <p class="perf-note" id="perf-ashrae-note"></p>
+        <div id="perf-ashrae-table"></div>
       </div>
     </div>
   </div>

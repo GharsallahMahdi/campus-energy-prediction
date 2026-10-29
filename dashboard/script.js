@@ -17,6 +17,11 @@ const btnViewHistory = document.getElementById('btn-view-history');
 const btnViewForecast = document.getElementById('btn-view-forecast');
 const btnViewForecast24 = document.getElementById('btn-view-forecast24');
 const btnViewInsights = document.getElementById('btn-view-insights');
+const btnViewPerformance = document.getElementById('btn-view-performance');
+const performancePanel = document.getElementById('performance-panel');
+const perfSimTables = document.getElementById('perf-sim-tables');
+const perfAshraeNote = document.getElementById('perf-ashrae-note');
+const perfAshraeTable = document.getElementById('perf-ashrae-table');
 const insightsPanel = document.getElementById('insights-panel');
 const insightChart = document.getElementById('insight-chart');
 const insightPeak = document.getElementById('insight-peak');
@@ -125,12 +130,13 @@ detailClose.addEventListener('click', () => {
 });
 
 // ---------- View switching ----------
-const allViewBtns = [btnViewProfile, btnViewHistory, btnViewForecast24, btnViewForecast, btnViewInsights];
+const allViewBtns = [btnViewProfile, btnViewHistory, btnViewForecast24, btnViewForecast, btnViewInsights, btnViewPerformance];
 btnViewProfile.addEventListener('click', () => { view = 'profile'; setActive(allViewBtns, btnViewProfile); render(); });
 btnViewHistory.addEventListener('click', () => { view = 'history'; setActive(allViewBtns, btnViewHistory); render(); });
 btnViewForecast24.addEventListener('click', () => { view = 'forecast24'; setActive(allViewBtns, btnViewForecast24); render(); });
 btnViewForecast.addEventListener('click', () => { view = 'forecast'; setActive(allViewBtns, btnViewForecast); render(); });
 btnViewInsights.addEventListener('click', () => { view = 'insights'; setActive(allViewBtns, btnViewInsights); render(); });
+btnViewPerformance.addEventListener('click', () => { view = 'performance'; setActive(allViewBtns, btnViewPerformance); render(); });
 btnWeekday.addEventListener('click', () => { dayType = 'weekday'; setActive([btnWeekday, btnWeekend], btnWeekday); render(); });
 btnWeekend.addEventListener('click', () => { dayType = 'weekend'; setActive([btnWeekday, btnWeekend], btnWeekend); render(); });
 
@@ -158,18 +164,75 @@ function render() {
   }
 
   const isInsights = view === 'insights';
-  chart.style.display = isInsights ? 'none' : 'block';
-  chartLegend.style.display = isInsights ? 'none' : 'flex';
+  const isPerformance = view === 'performance';
+  const isChartView = !isInsights && !isPerformance;
+  chart.style.display = isChartView ? 'block' : 'none';
+  chartLegend.style.display = isChartView ? 'flex' : 'none';
   insightsPanel.classList.toggle('show', isInsights);
-  // Insights view doesn't need the per-hour alert box - the insight
-  // summary already covers anomaly status in context.
-  if (isInsights) alertBox.classList.remove('show');
+  performancePanel.classList.toggle('show', isPerformance);
+  // Insights/Performance views don't need the per-hour alert box - the
+  // insight summary already covers anomaly status in context.
+  if (isInsights || isPerformance) alertBox.classList.remove('show');
 
   if (view === 'profile') drawProfile(e);
   else if (view === 'history') drawHistory(e);
   else if (view === 'forecast24') drawForecast(e, true);
   else if (view === 'forecast') drawForecast(e, false);
-  else drawInsights(e);
+  else if (view === 'insights') drawInsights(e);
+  else drawPerformance(e);
+}
+
+function drawPerformance(e) {
+  detailSub.textContent = 'Random Forest vs. LSTM, compared on this entity\u2019s own simulated data, next to real-world validation on ASHRAE/BDG2.';
+
+  if (!e.model_performance) {
+    perfSimTables.innerHTML = '<p class="perf-note">No model performance data for this entity yet - run build_comparison_table.py then build_map2_data.py.</p>';
+  } else {
+    const horizonLabels = { next_24h: 'Next 24 hours', next_7_days: 'Next 7 days' };
+    perfSimTables.innerHTML = Object.entries(horizonLabels).map(([key, label]) => {
+      const rows = e.model_performance[key];
+      if (!rows) return '';
+      const bestModel = rows.reduce((a, b) => (a.MAE < b.MAE ? a : b)).model;
+      const body = rows.map(r => `
+        <tr class="${r.model === bestModel ? 'best-row' : ''}">
+          <td>${r.model}</td>
+          <td>${r.MAE.toFixed(3)}</td>
+          <td>${r.RMSE.toFixed(3)}</td>
+          <td>${r.MAPE_pct.toFixed(2)}</td>
+          <td>${r.R2.toFixed(3)}</td>
+        </tr>`).join('');
+      return `
+        <div class="perf-table-wrap">
+          <div class="perf-table-title">${label}</div>
+          <table class="perf-table">
+            <thead><tr><th>Model</th><th>MAE (kWh)</th><th>RMSE (kWh)</th><th>MAPE (%)</th><th>R\u00b2</th></tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>`;
+    }).join('');
+  }
+
+  const ashrae = data.ashrae_performance || [];
+  if (ashrae.length === 0) {
+    perfAshraeNote.textContent = 'No ASHRAE results loaded yet - run ashrae_experiment.py, then build_comparison_table.py, then build_map2_data.py.';
+    perfAshraeTable.innerHTML = '';
+  } else {
+    perfAshraeNote.innerHTML = `Tested on ${ashrae[0].entity}. <strong>Evaluation differs from the simulated results above:</strong> ${ashrae[0].evaluation_method}. Unit: ${ashrae[0].unit}.`;
+    const bestAshrae = ashrae.reduce((a, b) => (a.MAE < b.MAE ? a : b)).model;
+    const body = ashrae.map(r => `
+      <tr class="${r.model === bestAshrae ? 'best-row' : ''}">
+        <td>${r.model}</td>
+        <td>${r.MAE.toFixed(3)}</td>
+        <td>${r.RMSE.toFixed(3)}</td>
+        <td>${r.MAPE_pct.toFixed(2)}</td>
+        <td>${r.R2.toFixed(3)}</td>
+      </tr>`).join('');
+    perfAshraeTable.innerHTML = `
+      <table class="perf-table">
+        <thead><tr><th>Model</th><th>MAE</th><th>RMSE</th><th>MAPE (%)</th><th>R\u00b2</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
 }
 
 // Accurate, dynamic description of which weather was actually used -

@@ -1,0 +1,29 @@
+dataset,entity,entity_type,model,horizon,evaluation_method,MAE,RMSE,unit,MAPE_pct,R2
+Simulated STIEI,J,building,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",1.867,2.923,kWh,5.98,0.986
+Simulated STIEI,J,building,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",3.371,5.455,kWh,14.55,0.948
+Simulated STIEI,J,building,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",7.731,9.589,kWh,34.05,0.845
+Simulated STIEI,J,building,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",16.013,21.573,kWh,83.77,0.183
+Simulated STIEI,9,building,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",1.005,1.17,kWh,5.97,0.982
+Simulated STIEI,9,building,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",1.403,1.922,kWh,8.13,0.946
+Simulated STIEI,9,building,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",4.082,5.771,kWh,18.11,0.557
+Simulated STIEI,9,building,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",8.478,12.078,kWh,43.83,-1.14
+Simulated STIEI,9-101,room,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",0.062,0.082,kWh,8.74,0.925
+Simulated STIEI,9-101,room,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",0.084,0.114,kWh,12.87,0.89
+Simulated STIEI,9-101,room,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",0.2,0.248,kWh,23.56,0.309
+Simulated STIEI,9-101,room,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",0.277,0.345,kWh,35.02,-0.006
+Simulated STIEI,9-105,room,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",0.074,0.11,kWh,9.84,0.901
+Simulated STIEI,9-105,room,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",0.378,0.59,kWh,29.19,0.183
+Simulated STIEI,9-105,room,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",0.183,0.268,kWh,20.61,0.419
+Simulated STIEI,9-105,room,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",0.597,0.822,kWh,49.64,-0.588
+Simulated STIEI,9-110,room,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",0.105,0.137,kWh,11.4,0.901
+Simulated STIEI,9-110,room,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",0.101,0.13,kWh,12.57,0.907
+Simulated STIEI,9-110,room,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",0.238,0.318,kWh,22.02,0.466
+Simulated STIEI,9-110,room,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",0.324,0.417,kWh,33.84,0.046
+Simulated STIEI,9-115,room,Random Forest,next_24h,"Recursive, no-leakage multi-step forecast",0.136,0.196,kWh,15.88,0.84
+Simulated STIEI,9-115,room,Random Forest,next_7_days,"Recursive, no-leakage multi-step forecast",0.185,0.276,kWh,24.22,0.66
+Simulated STIEI,9-115,room,LSTM,next_24h,"Recursive, no-leakage multi-step forecast",0.265,0.362,kWh,21.51,0.456
+Simulated STIEI,9-115,room,LSTM,next_7_days,"Recursive, no-leakage multi-step forecast",0.362,0.454,kWh,33.7,0.084
+Real ASHRAE/BDG2,30 selected educational buildings (pooled),real buildings,Random Forest (time features),Nov-Dec 2016 (held-out),"Time-based split; lag features use real historical values (oracle-style, not recursive)",16.047,28.712,kWh (per ASHRAE's documentation; not independently re-verified for this sample),28.27,0.992
+Real ASHRAE/BDG2,30 selected educational buildings (pooled),real buildings,Random Forest + lags,Nov-Dec 2016 (held-out),"Time-based split; lag features use real historical values (oracle-style, not recursive)",10.129,20.69,kWh (per ASHRAE's documentation; not independently re-verified for this sample),12.4,0.996
+Real ASHRAE/BDG2,30 selected educational buildings (pooled),real buildings,Gradient Boosting + lags,Nov-Dec 2016 (held-out),"Time-based split; lag features use real historical values (oracle-style, not recursive)",9.949,20.441,kWh (per ASHRAE's documentation; not independently re-verified for this sample),13.47,0.996
+Real ASHRAE/BDG2,30 selected educational buildings (pooled),real buildings,LSTM,Nov-Dec 2016 (held-out),"Time-based split; lag features use real historical values (oracle-style, not recursive)",7.252,15.954,kWh (per ASHRAE's documentation; not independently re-verified for this sample),6.58,0.997
